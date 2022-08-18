@@ -47,13 +47,9 @@ def main():
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <meta content="utf-8" http-equiv="encoding">
 
-        <TITLE>334</TITLE>
-        <script type="text/javascript">
-            window.addEventListener('load', () => {} );
-        </script>
+        <TITLE>images</TITLE>
         <style>
             body { color:#ccb; background:black; font-family: sans-serif; margin:.5em; }
-            pre  { color:#8c8; }  
             a    { color:#aad; text-decoration:none; }
         </style>
     </HEAD>
