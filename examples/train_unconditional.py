@@ -182,7 +182,10 @@ def main(args):
                 # denormalize the images and save to tensorboard
                 images_processed = (images * 255).round().astype("uint8")
                 epoch06 = str(epoch).zfill( 6 )
-                test_samples = datetime.now().strftime(f"test_samples-%Y-%m-%d+%H-%M-%S+{epoch06}")
+                if args.timestamp_test_samples:
+                    test_samples = datetime.now().strftime(f"test_samples-%Y-%m-%d+%H-%M-%S+{epoch06}")
+                else:
+                    test_samples = "test_samples"
                 accelerator.trackers[0].writer.add_images(
                     test_samples, images_processed.transpose(0, 3, 1, 2), epoch
                 )
@@ -192,7 +195,7 @@ def main(args):
                 if args.push_to_hub:
                     push_to_hub(args, pipeline, repo, commit_message=f"Epoch {epoch}", blocking=False)
                 else:
-                    if args.checkpoint_model and os.path.exists(model_dir):
+                    if not 0 == args.checkpoint_model_epochs and epoch % args.checkpoint_model_epochs == 0 and os.path.exists(model_dir):
                         checkpoints_dir = f"{args.output_dir}/checkpoints"
                         os.makedirs(checkpoints_dir, exist_ok=True)
                         checkpoint_dir = datetime.now().strftime(f"{checkpoints_dir}/checkpoint-%Y-%m-%d+%H-%M-%S")
@@ -237,15 +240,26 @@ if __name__ == "__main__":
     parser.add_argument("--hub_model_id", type=str, default=None)
     parser.add_argument("--hub_private_repo", action="store_true")
     parser.add_argument("--logging_dir", type=str, default="logs")
-    parser.add_argument("--checkpoint_model", action="store_true", default=False)
+    parser.add_argument("--timestamp_test_samples", action="store_true")
+    parser.add_argument(
+        "--checkpoint_model_epochs", 
+        type=int, 
+        default=0, 
+        help=(
+            "Make periodic backups of the model on save. "
+            "The value should be n * save_model_epochs value, "
+            "where n is a positive integer. "
+            "A value of 0 disables the behavior and is the default."
+        ),
+    )
     parser.add_argument(
         "--mixed_precision",
         type=str,
         default="no",
         choices=["no", "fp16", "bf16"],
         help=(
-            "Whether to use mixed precision. Choose"
-            "between fp16 and bf16 (bfloat16). Bf16 requires PyTorch >= 1.10."
+            "Whether to use mixed precision. Choose "
+            "between fp16 and bf16 (bfloat16). Bf16 requires PyTorch >= 1.10. "
             "and an Nvidia Ampere GPU."
         ),
     )
